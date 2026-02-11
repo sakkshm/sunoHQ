@@ -1,0 +1,112 @@
+generator client {
+  provider             = "prisma-client-py"
+  interface            = "asyncio"
+  recursive_type_depth = 5
+  enable_experimental_decimal = true
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")   // runtime (pooler OK)
+  directUrl = env("DIRECT_URL")     // schema/migrations (direct DB)
+}
+
+
+model Business {
+  id           String   @id @default(uuid())
+  userId       String   @map("user_id")
+  botToken     String   @unique @map("bot_token")
+  botUuid      String   @unique @default(uuid()) @map("bot_uuid")
+  
+  // Business Info
+  businessName String   @map("business_name")
+  category     String?
+  description  String?
+  
+  // Bot Characteristics
+  language     String   @default("hi-IN")
+  voiceSpeaker String   @default("meera") @map("voice_speaker")
+  botPersona   String?  @map("bot_persona")
+  
+  // Operating Details
+  operatingHours Json?  @map("operating_hours")
+  location       String?
+  phone          String?
+  email          String?
+  
+  // Configuration
+  webhookUrl     String?  @map("webhook_url")
+  webhookEnabled Boolean  @default(false) @map("webhook_enabled")
+  status         String   @default("active")
+  
+  // Timestamps
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  
+  // Relations
+  conversations Conversation[]
+  appointments  Appointment[]
+  orders        Order[]
+  
+  @@map("businesses")
+}
+
+model Conversation {
+  id           String   @id @default(uuid())
+  businessId   String   @map("business_id")
+  customerId   String   @map("customer_id")
+  customerName String?  @map("customer_name")
+  
+  messages     Json[]   @default([])
+  language     String?
+  
+  lastActivity DateTime @default(now()) @map("last_activity")
+  createdAt    DateTime @default(now()) @map("created_at")
+  
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  
+  @@index([businessId])
+  @@index([customerId])
+  @@map("conversations")
+}
+
+model Appointment {
+  id           String   @id @default(uuid())
+  businessId   String   @map("business_id")
+  customerId   String   @map("customer_id")
+  customerName String?  @map("customer_name")
+  phone        String?
+  
+  date         DateTime @db.Date
+  time         DateTime @db.Time
+  service      String?
+  notes        String?
+  
+  status       String   @default("confirmed")
+  createdAt    DateTime @default(now()) @map("created_at")
+  
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  
+  @@index([businessId])
+  @@index([date])
+  @@map("appointments")
+}
+
+model Order {
+  id              String   @id @default(uuid())
+  businessId      String   @map("business_id")
+  customerId      String   @map("customer_id")
+  
+  items           Json[]   @default([])
+  totalAmount     Decimal? @map("total_amount") @db.Decimal(10, 2)
+  deliveryAddress String?  @map("delivery_address")
+  phone           String?
+  
+  status          String   @default("pending")
+  createdAt       DateTime @default(now()) @map("created_at")
+  
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  
+  @@index([businessId])
+  @@map("orders")
+}
