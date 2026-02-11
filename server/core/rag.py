@@ -66,3 +66,31 @@ def search_documents(query: str, business_id: str, limit: int = 3):
     )
 
     return clean_qdrant_response(results.model_dump())
+
+
+def get_documents_by_business(business_id: str):
+    """Fetch all documents stored for a business from Qdrant"""
+    from qdrant_client.models import Filter, FieldCondition, MatchValue
+    
+    results, _ = client.scroll(
+        collection_name=COLLECTION_NAME,
+        scroll_filter=Filter(
+            must=[
+                FieldCondition(
+                    key="business_id",
+                    match=MatchValue(value=business_id),
+                )
+            ]
+        ),
+        limit=100,
+        with_payload=True,
+        with_vectors=False,
+    )
+    
+    return [
+        {
+            "id": str(point.id),
+            "text": point.payload.get("text", ""),
+        }
+        for point in results
+    ]
