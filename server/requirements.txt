@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+python-dotenv
+qdrant-client
+google-genai
+httpx
+prisma
+pydantic
+python-multipart
