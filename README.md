@@ -2,6 +2,9 @@
 
 SunoHQ is a no-code platform for deploying multilingual AI voice agents for small businesses. It provides an end-to-end conversational pipeline that handles speech recognition, retrieval, reasoning, and speech synthesis with minimal setup.
 
+[Watch the Demo](https://x.com/Abhinav_kodes/status/2021654822412583356)
+
+
 ## Overview
 
 SunoHQ enables businesses to deploy AI agents that can:
